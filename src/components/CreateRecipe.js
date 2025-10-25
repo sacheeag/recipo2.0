@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import './CreateRecipe.css';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { recipeService } from '../services/recipeService';
 
 function CreateRecipe() {
     const navigate = useNavigate();
-    const home = () => {
-        navigate('/')
-    }
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
   const [recipeTitle, setRecipeTitle] = useState('');
   const [description, setDescription] = useState('');
   const [ingredients, setIngredients] = useState([]);
@@ -39,13 +39,85 @@ function CreateRecipe() {
     fileInputRef.current.click();
   };
 
+  const handleSaveRecipe = async () => {
+    if (!recipeTitle.trim()) {
+      setError('Please enter a recipe title');
+      return;
+    }
+
+    if (ingredients.length === 0) {
+      setError('Please add at least one ingredient');
+      return;
+    }
+
+    if (steps.length === 0) {
+      setError('Please add at least one instruction step');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      let imageUrl = null;
+      
+      // Upload image if selected
+      if (selectedImage && fileInputRef.current.files[0]) {
+        const uploadResult = await recipeService.uploadRecipeImage(fileInputRef.current.files[0], Date.now());
+        if (uploadResult.error) {
+          throw uploadResult.error;
+        }
+        imageUrl = uploadResult.data.url;
+      }
+
+      const recipeData = {
+        title: recipeTitle.trim(),
+        description: description.trim(),
+        ingredients: ingredients.filter(ing => ing.trim()),
+        instructions: steps.map(step => step.content.trim()).filter(content => content),
+        image_url: imageUrl,
+        prep_time: 30, // Default value, can be made configurable
+        difficulty: 'Easy', // Default value, can be made configurable
+        tags: ['Custom'], // Default value, can be made configurable
+      };
+
+      const { error } = await recipeService.createRecipe(recipeData);
+      
+      if (error) {
+        throw error;
+      }
+
+      // Success - navigate to recipe book
+      navigate('/recipe');
+    } catch (err) {
+      setError(err.message || 'Failed to save recipe');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="create-recipe-container">
       <div className="create-recipe-header">
         <h1>Create new recipe</h1>
-        <button className="save-button" onClick={home}>Save</button>
+        <button className="save-button" onClick={handleSaveRecipe} disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </button>
       </div>
+
+      {error && (
+        <div className="error-message" style={{ 
+          color: '#ff6b6b', 
+          margin: '10px 20px', 
+          padding: '10px', 
+          backgroundColor: '#ffe6e6', 
+          borderRadius: '4px',
+          fontSize: '14px'
+        }}>
+          {error}
+        </div>
+      )}
 
       <div className="recipe-form">
         <div className="form-group">

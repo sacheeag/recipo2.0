@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import Logo from '../images/Logom.png';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 function Headerf() {
     const navigate = useNavigate();
+    const { user, signOut } = useAuth();
     const [menuActive, setMenuActive] = useState(false);
     
     const home = () => {
@@ -17,9 +19,18 @@ function Headerf() {
     const login = () => {
         navigate('/action3');
     };
+
+    const createRecipe = () => {
+        navigate('/create-recipe');
+    };
     
     const toggleMenu = () => {
         setMenuActive(!menuActive);
+    };
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/');
     };
     
     return (
@@ -41,8 +52,18 @@ function Headerf() {
                 <a href="/">Contact</a>
             </div>
             <div className="auth-buttons">
-                <button className="login-btn" onClick={login}>Login</button>
-                <button className="signup-btn" onClick={action2}>Sign Up</button>
+                <button className="create-recipe-btn" onClick={createRecipe}>Create Recipe</button>
+                {user ? (
+                    <div className="user-menu">
+                        <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
+                        <button className="logout-btn" onClick={handleSignOut}>Logout</button>
+                    </div>
+                ) : (
+                    <>
+                        <button className="login-btn" onClick={login}>Login</button>
+                        <button className="signup-btn" onClick={action2}>Sign Up</button>
+                    </>
+                )}
             </div>
         </div>
         </>

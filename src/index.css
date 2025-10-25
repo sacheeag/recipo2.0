@@ -96,6 +96,52 @@ body {
   opacity: 0.8;
 }
 
+.create-recipe-btn {
+  padding: 6px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Arial', sans-serif;
+  border: none;
+  transition: all 0.3s ease;
+  background-color: #ff6b6b;
+  color: white;
+  margin-right: 10px;
+}
+
+.create-recipe-btn:hover {
+  background-color: #ff5252;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name {
+  color: white;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+}
+
+.logout-btn {
+  padding: 6px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Arial', sans-serif;
+  border: 1px solid white;
+  background-color: transparent;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: white;
+  color: black;
+}
+
 .dis {
   width: 188px;
   height: 50px;
