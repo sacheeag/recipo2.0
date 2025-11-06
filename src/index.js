@@ -17,6 +17,7 @@ import App7 from './App7';
 import AuthPage from './components/AuthPage';
 import CreateRecipe from './components/CreateRecipe';
 import RecipeDetail from './components/RecipeDetail';
+import FavoritesPage from './components/FavoritesPage';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
@@ -31,6 +32,7 @@ root.render(
           <Route path="/recipe" element={<App6 />}/>
           <Route path="/recipe/:id" element={<RecipeDetail />}/>
           <Route path="/create-recipe" element={<CreateRecipe />}/>
+          <Route path="/favorites" element={<FavoritesPage />}/>
           <Route path="/share" element={<App7 />}/>
         </Routes>
       </Router>

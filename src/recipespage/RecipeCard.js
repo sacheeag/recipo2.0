@@ -3,12 +3,48 @@ import React, { useState, useEffect } from "react";
 import "./Page.css";
 import { useNavigate } from 'react-router-dom';
 import { recipeService } from '../services/recipeService';
+import { useAuth } from '../contexts/AuthContext';
 
 const RecipeCards = ({ recipe, onRecipeClick }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (user && recipe.id) {
+        const { isFavorited: favorited } = await recipeService.isFavorited(recipe.id);
+        setIsFavorited(favorited);
+      }
+    };
+    checkFavorite();
+  }, [user, recipe.id]);
 
   const handleClick = () => {
     onRecipeClick(recipe.id);
+  };
+
+  const handleFavoriteClick = async (e) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      navigate('/action3');
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await recipeService.removeFromFavorites(recipe.id);
+        setIsFavorited(false);
+      } else {
+        await recipeService.addToFavorites(recipe.id);
+        setIsFavorited(true);
+      }
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+    }
   };
 
   return (
@@ -36,7 +72,13 @@ const RecipeCards = ({ recipe, onRecipeClick }) => {
           <div className="rating">
             ⭐ <span>4.5</span>
           </div>
-          <button className="favorite-btn">♡</button>
+          <button 
+            className={`favorite-btn ${isFavorited ? 'favorited' : ''}`}
+            onClick={handleFavoriteClick}
+            title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorited ? '♥' : '♡'}
+          </button>
         </div>
       </div>
     </div>

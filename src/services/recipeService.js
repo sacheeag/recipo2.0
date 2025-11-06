@@ -149,5 +149,94 @@ export const recipeService = {
       .getPublicUrl(filePath)
 
     return { data: { url: publicUrl }, error: null }
+  },
+
+  // Add recipe to favorites
+  async addToFavorites(recipeId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { data: null, error: { message: 'Please log in to add favorites' } }
+    }
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .insert([
+        {
+          user_id: user.id,
+          recipe_id: recipeId
+        }
+      ])
+      .select()
+      .single()
+    
+    return { data, error }
+  },
+
+  // Remove recipe from favorites
+  async removeFromFavorites(recipeId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { data: null, error: { message: 'User not authenticated' } }
+    }
+
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('recipe_id', recipeId)
+    
+    return { data: null, error }
+  },
+
+  // Check if recipe is favorited
+  async isFavorited(recipeId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { isFavorited: false, error: null }
+    }
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('recipe_id', recipeId)
+      .single()
+    
+    return { isFavorited: !!data, error }
+  },
+
+  // Get user's favorite recipes
+  async getUserFavorites() {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { data: [], error: { message: 'Please log in to view favorites' } }
+    }
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .select(`
+        *,
+        recipes:recipe_id (
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url
+          )
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    
+    // Extract recipes from the nested structure
+    const recipes = data?.map(fav => ({
+      ...fav.recipes,
+      favorited_at: fav.created_at
+    })) || []
+    
+    return { data: recipes, error }
   }
 }

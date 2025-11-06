@@ -23,6 +23,10 @@ function Headerf() {
     const createRecipe = () => {
         navigate('/create-recipe');
     };
+
+    const goToFavorites = () => {
+        navigate('/favorites');
+    };
     
     const toggleMenu = () => {
         setMenuActive(!menuActive);
@@ -53,6 +57,11 @@ function Headerf() {
             </div>
             <div className="auth-buttons">
                 <button className="create-recipe-btn" onClick={createRecipe}>Create Recipe</button>
+                {user && (
+                    <button className="favorites-btn" onClick={goToFavorites} title="My Favorites">
+                        ♥ Favorites
+                    </button>
+                )}
                 {user ? (
                     <div className="user-menu">
                         <span className="user-name">{user.user_metadata?.full_name || user.email}</span>

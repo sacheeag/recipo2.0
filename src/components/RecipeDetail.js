@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { recipeService } from '../services/recipeService';
+import { useAuth } from '../contexts/AuthContext';
 import Headerf from './Headerf';
 import './RecipeDetail.css';
 
 const RecipeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -32,8 +35,37 @@ const RecipeDetail = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (user && id) {
+        const { isFavorited: favorited } = await recipeService.isFavorited(id);
+        setIsFavorited(favorited);
+      }
+    };
+    checkFavorite();
+  }, [user, id]);
+
   const goBack = () => {
     navigate('/recipe');
+  };
+
+  const handleFavoriteClick = async () => {
+    if (!user) {
+      navigate('/action3');
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await recipeService.removeFromFavorites(id);
+        setIsFavorited(false);
+      } else {
+        await recipeService.addToFavorites(id);
+        setIsFavorited(true);
+      }
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+    }
   };
 
   if (loading) {
@@ -136,8 +168,11 @@ const RecipeDetail = () => {
 
         {/* Action Buttons */}
         <div className="recipe-actions">
-          <button className="action-button favorite-btn">
-            ♡ Add to Favorites
+          <button 
+            className={`action-button favorite-btn ${isFavorited ? 'favorited' : ''}`}
+            onClick={handleFavoriteClick}
+          >
+            {isFavorited ? '♥ Remove from Favorites' : '♡ Add to Favorites'}
           </button>
           <button className="action-button share-btn">
             📤 Share Recipe
